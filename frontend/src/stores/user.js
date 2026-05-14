@@ -21,15 +21,24 @@ export const useUserStore = defineStore('user', () => {
     return data
   }
 
-  async function register(name, email, password, phone) {
-    const { data } = await axios.post('/api/auth/register', { name, email, password, phone })
+  async function register(name, email, password, phone, nationalId, accountType) {
+    const { data } = await axios.post('/api/auth/register', { name, email, password, phone, nationalId, accountType })
     setAuth(data.token, data.user)
     return data
+  }
+
+  async function refreshUser() {
+    try {
+      const { data } = await axios.get('/api/auth/me', { headers: { Authorization: `Bearer ${token.value}` } })
+      user.value = data
+      localStorage.setItem('kt_user_data', JSON.stringify(data))
+    } catch {}
   }
 
   function logout() {
     token.value = null; user.value = null; wishlistIds.value = []
     localStorage.removeItem('kt_user_token'); localStorage.removeItem('kt_user_data'); localStorage.removeItem('kt_wishlist_ids')
+    delete axios.defaults.headers.common['Authorization']
   }
 
   function initUser() {
@@ -45,5 +54,5 @@ export const useUserStore = defineStore('user', () => {
 
   function isWishlisted(id) { return wishlistIds.value.includes(id) }
 
-  return { token, user, isLoggedIn, wishlistIds, login, register, logout, initUser, toggleWishlist, isWishlisted }
+  return { token, user, isLoggedIn, wishlistIds, login, register, logout, initUser, refreshUser, toggleWishlist, isWishlisted }
 })

@@ -15,7 +15,8 @@ app.use('/api/products', require('./routes/products'))
 app.use('/api/categories', require('./routes/categories'))
 app.use('/api/orders', require('./routes/orders'))
 app.use('/api/wishlist', require('./routes/wishlist'))
+app.use('/api/admin', require('./routes/admin'))
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'KlikTrade Rwanda API — 100% JavaScript!' }))
+app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'KlikTrade Rwanda API' }))
 
 app.listen(PORT, () => console.log(`KlikTrade API running → http://localhost:${PORT}`))
