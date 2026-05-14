@@ -1,0 +1,52 @@
+
+> kliktrade-shop@1.0.0 dev:backend
+> npm run dev --prefix backend
+
+[1G[0K
+> kliktrade-backend@1.0.0 dev
+> nodemon src/server.js
+
+[1G[0K[33m[nodemon] 3.1.14[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node src/server.js`[39m
+KlikTrade API running → http://localhost:3001
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/server.js`[39m
+KlikTrade API running → http://localhost:3001
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/server.js`[39m
+KlikTrade API running → http://localhost:3001
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/server.js`[39m
+KlikTrade API running → http://localhost:3001
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/server.js`[39m
+KlikTrade API running → http://localhost:3001
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/server.js`[39m
+KlikTrade API running → http://localhost:3001
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/server.js`[39m
+KlikTrade API running → http://localhost:3001
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/server.js`[39m
+KlikTrade API running → http://localhost:3001
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/server.js`[39m
+KlikTrade API running → http://localhost:3001
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/server.js`[39m
+KlikTrade API running → http://localhost:3001
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/server.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/server.js`[39m
+KlikTrade API running → http://localhost:3001
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/server.js`[39m
+KlikTrade API running → http://localhost:3001
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/server.js`[39m
+KlikTrade API running → http://localhost:3001
