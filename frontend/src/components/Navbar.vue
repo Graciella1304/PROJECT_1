@@ -3,11 +3,11 @@
     <!-- Topbar -->
     <div class="topbar">
       <div class="container topbar-inner">
-        <span><i class="fa fa-map-marker-alt"></i> {{ t.footer.tagline }}</span>
+        <span><i class="fa fa-map-marker-alt"></i> Rwanda's #1 Marketplace</span>
         <div class="topbar-right">
           <span><i class="fa fa-phone"></i> +250 788 000 000</span>
           <span class="divider">|</span>
-          <RouterLink to="/become-seller" class="seller-link"><i class="fa fa-store"></i> {{ t.nav.sellOnKlikTrade }}</RouterLink>
+          <span class="topbar-email"><i class="fa fa-envelope"></i> support@kliktrade.rw</span>
         </div>
       </div>
     </div>
@@ -16,7 +16,7 @@
     <div class="navbar-main">
       <div class="container nav-inner">
         <RouterLink to="/" class="brand">
-          <div class="brand-icon">K</div>
+          <img src="/logo.png" alt="KlikTrade" class="brand-logo" />
           <div class="brand-text">
             <span class="brand-name">KlikTrade</span>
             <span class="brand-tag">Rwanda</span>
@@ -25,16 +25,16 @@
 
         <div class="search-box">
           <select v-model="searchCat">
-            <option value="">{{ t.nav.allCategories }}</option>
+            <option value="">All Categories</option>
             <option v-for="c in categories" :key="c._id" :value="c.slug">{{ c.name }}</option>
           </select>
-          <input v-model="query" :placeholder="t.product.search + '...'" @keyup.enter="search" />
+          <input v-model="query" placeholder="Search listings..." @keyup.enter="search" />
           <button @click="search"><i class="fa fa-search"></i></button>
         </div>
 
         <div class="nav-icons">
           <!-- Theme toggle -->
-          <button class="nav-btn icon-only" @click="themeStore.toggle()" :title="themeStore.isDark ? t.settings.lightMode : t.settings.darkMode">
+          <button class="nav-btn icon-only" @click="themeStore.toggle()" :title="themeStore.isDark ? 'Light mode' : 'Dark mode'">
             <i :class="themeStore.isDark ? 'fa fa-sun' : 'fa fa-moon'"></i>
           </button>
 
@@ -56,27 +56,38 @@
           <!-- Wishlist -->
           <RouterLink to="/wishlist" class="nav-btn">
             <i class="fa fa-heart"></i>
-            <span>{{ t.nav.wishlist }}</span>
+            <span>Wishlist</span>
             <span v-if="wishCount" class="icon-count">{{ wishCount }}</span>
           </RouterLink>
 
           <!-- Cart -->
           <RouterLink to="/cart" class="nav-btn">
             <i class="fa fa-shopping-cart"></i>
-            <span>{{ t.nav.cart }}</span>
+            <span>Cart</span>
             <span v-if="cartCount" class="icon-count">{{ cartCount }}</span>
+          </RouterLink>
+
+          <!-- Seller Sell button — only for approved sellers -->
+          <RouterLink v-if="userStore.isLoggedIn && userStore.user?.role === 'seller'" to="/sell" class="btn-sell-sticky">
+            <i class="fa fa-plus"></i> Sell
           </RouterLink>
 
           <!-- User Menu -->
           <div v-if="userStore.isLoggedIn" class="user-menu-wrap">
             <button class="nav-btn user-trigger" @click="menuOpen = !menuOpen">
-              <div class="user-avatar-sm">{{ userStore.user?.name?.[0]?.toUpperCase() }}</div>
+              <div class="user-avatar-sm">
+                <img v-if="userStore.user?.avatar" :src="userStore.user.avatar" :alt="userStore.user.name" class="avatar-img" />
+                <span v-else>{{ userStore.user?.name?.[0]?.toUpperCase() }}</span>
+              </div>
               <span>{{ userStore.user?.name?.split(' ')[0] }}</span>
               <i class="fa fa-chevron-down" style="font-size:10px"></i>
             </button>
             <div v-if="menuOpen" class="user-dropdown">
               <div class="dropdown-header">
-                <div class="dh-avatar">{{ userStore.user?.name?.[0]?.toUpperCase() }}</div>
+                <div class="dh-avatar">
+                  <img v-if="userStore.user?.avatar" :src="userStore.user.avatar" :alt="userStore.user.name" class="avatar-img" />
+                  <span v-else>{{ userStore.user?.name?.[0]?.toUpperCase() }}</span>
+                </div>
                 <div>
                   <strong>{{ userStore.user?.name }}</strong>
                   <small>{{ userStore.user?.email }}</small>
@@ -84,21 +95,20 @@
                 </div>
               </div>
               <RouterLink :to="userStore.user?.role === 'seller' ? '/dashboard/seller' : '/dashboard/buyer'" @click="menuOpen=false" class="dd-link">
-                <i class="fa fa-tachometer-alt"></i> {{ t.nav.dashboard }}
+                <i class="fa fa-tachometer-alt"></i> Dashboard
               </RouterLink>
               <RouterLink v-if="userStore.user?.role === 'seller'" to="/sell" @click="menuOpen=false" class="dd-link">
-                <i class="fa fa-plus-circle"></i> {{ t.nav.postAd }}
+                <i class="fa fa-plus-circle"></i> Post an Ad
               </RouterLink>
-              <RouterLink to="/wishlist" @click="menuOpen=false" class="dd-link"><i class="fa fa-heart"></i> {{ t.nav.wishlist }}</RouterLink>
-              <RouterLink to="/notifications" @click="menuOpen=false" class="dd-link"><i class="fa fa-bell"></i> {{ t.nav.notifications }}</RouterLink>
-              <RouterLink to="/settings" @click="menuOpen=false" class="dd-link"><i class="fa fa-cog"></i> {{ t.nav.settings }}</RouterLink>
-              <button class="dd-link logout" @click="logout"><i class="fa fa-sign-out-alt"></i> {{ t.nav.signout }}</button>
+              <RouterLink to="/wishlist" @click="menuOpen=false" class="dd-link"><i class="fa fa-heart"></i> Wishlist</RouterLink>
+              <RouterLink to="/notifications" @click="menuOpen=false" class="dd-link"><i class="fa fa-bell"></i> Notifications</RouterLink>
+              <RouterLink to="/settings" @click="menuOpen=false" class="dd-link"><i class="fa fa-cog"></i> Settings</RouterLink>
+              <button class="dd-link logout" @click="logout"><i class="fa fa-sign-out-alt"></i> Sign Out</button>
             </div>
           </div>
 
           <RouterLink v-else to="/signin" class="btn-signin">
-            <i class="fa fa-user-circle"></i>
-            {{ t.nav.signin }}
+            <i class="fa fa-user-circle"></i> Sign In
           </RouterLink>
 
           <button class="hamburger" @click="mobileMenu = !mobileMenu">
@@ -112,13 +122,14 @@
     <nav class="cat-nav">
       <div class="container cat-nav-inner">
         <RouterLink to="/listing" class="cat-link" :class="{ active: $route.path==='/listing' && !$route.query.category }">
-          <i class="fa fa-th-large"></i> {{ t.general.all }}
+          <i class="fa fa-th-large"></i> All
         </RouterLink>
         <RouterLink v-for="c in categories" :key="c._id" :to="`/listing?category=${c.slug}`" class="cat-link" :class="{ active: $route.query.category === c.slug }">
           <i :class="`fa ${c.icon || 'fa-tag'}`"></i> {{ c.name }}
         </RouterLink>
-        <RouterLink to="/sell" class="cat-link sell-link">
-          <i class="fa fa-plus"></i> {{ t.nav.sell }}
+        <!-- Sell link: ONLY shows for approved sellers -->
+        <RouterLink v-if="userStore.isLoggedIn && userStore.user?.role === 'seller'" to="/sell" class="cat-link sell-link">
+          <i class="fa fa-plus"></i> Post an Ad
         </RouterLink>
       </div>
     </nav>
@@ -126,19 +137,19 @@
     <!-- Mobile Menu -->
     <div v-if="mobileMenu" class="mobile-menu">
       <div class="mob-search">
-        <input v-model="query" :placeholder="t.product.search + '...'" @keyup.enter="search(); mobileMenu=false" />
+        <input v-model="query" placeholder="Search listings..." @keyup.enter="search(); mobileMenu=false" />
         <button @click="search(); mobileMenu=false"><i class="fa fa-search"></i></button>
       </div>
-      <RouterLink to="/" @click="mobileMenu=false" class="mob-link"><i class="fa fa-home"></i> {{ t.nav.home }}</RouterLink>
-      <RouterLink to="/listing" @click="mobileMenu=false" class="mob-link"><i class="fa fa-th-large"></i> {{ t.nav.browse }}</RouterLink>
-      <RouterLink to="/sell" @click="mobileMenu=false" class="mob-link"><i class="fa fa-plus-circle"></i> {{ t.nav.postAd }}</RouterLink>
-      <RouterLink to="/wishlist" @click="mobileMenu=false" class="mob-link"><i class="fa fa-heart"></i> {{ t.nav.wishlist }}</RouterLink>
-      <RouterLink to="/cart" @click="mobileMenu=false" class="mob-link"><i class="fa fa-shopping-cart"></i> {{ t.nav.cart }} ({{ cartCount }})</RouterLink>
+      <RouterLink to="/" @click="mobileMenu=false" class="mob-link"><i class="fa fa-home"></i> Home</RouterLink>
+      <RouterLink to="/listing" @click="mobileMenu=false" class="mob-link"><i class="fa fa-th-large"></i> Browse</RouterLink>
+      <RouterLink v-if="userStore.user?.role === 'seller'" to="/sell" @click="mobileMenu=false" class="mob-link sell"><i class="fa fa-plus-circle"></i> Post an Ad</RouterLink>
+      <RouterLink to="/wishlist" @click="mobileMenu=false" class="mob-link"><i class="fa fa-heart"></i> Wishlist</RouterLink>
+      <RouterLink to="/cart" @click="mobileMenu=false" class="mob-link"><i class="fa fa-shopping-cart"></i> Cart ({{ cartCount }})</RouterLink>
       <div class="mob-lang">
         <button v-for="l in i18nStore.availableLanguages" :key="l.code" :class="['mob-lang-btn', { active: i18nStore.lang === l.code }]" @click="i18nStore.setLang(l.code)">{{ l.flag }} {{ l.name }}</button>
       </div>
-      <RouterLink v-if="!userStore.isLoggedIn" to="/signin" @click="mobileMenu=false" class="mob-link sign-in"><i class="fa fa-sign-in-alt"></i> {{ t.nav.signin }}</RouterLink>
-      <button v-else class="mob-link" @click="logout"><i class="fa fa-sign-out-alt"></i> {{ t.nav.signout }}</button>
+      <RouterLink v-if="!userStore.isLoggedIn" to="/signin" @click="mobileMenu=false" class="mob-link sign-in"><i class="fa fa-sign-in-alt"></i> Sign In</RouterLink>
+      <button v-else class="mob-link" @click="logout"><i class="fa fa-sign-out-alt"></i> Sign Out</button>
     </div>
   </header>
 </template>
@@ -157,7 +168,6 @@ const cart = useCartStore()
 const userStore = useUserStore()
 const themeStore = useThemeStore()
 const i18nStore = useI18nStore()
-const { t } = i18nStore
 
 const query = ref('')
 const searchCat = ref('')
@@ -196,22 +206,21 @@ onUnmounted(() => document.removeEventListener('click', handleOutside))
 </script>
 
 <style scoped>
-.navbar { position: sticky; top: 0; z-index: 1000; background: var(--surface); box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: background 0.3s; }
+.navbar { position: sticky; top: 0; z-index: 1000; background: var(--surface); box-shadow: 0 2px 8px rgba(44,26,14,0.1); transition: background 0.3s; }
 
-.topbar { background: var(--secondary); color: rgba(255,255,255,0.7); font-size: 12px; }
-.topbar-inner { display: flex; align-items: center; height: 32px; gap: 0; }
+.topbar { background: var(--secondary); color: rgba(255,255,255,0.65); font-size: 12px; }
+.topbar-inner { display: flex; align-items: center; height: 32px; }
 .topbar-inner i { margin-right: 4px; color: var(--primary-light); }
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.topbar-email { display: flex; align-items: center; gap: 4px; }
 .divider { opacity: 0.3; }
-.seller-link { color: var(--accent) !important; font-weight: 600; display: flex; align-items: center; gap: 5px; }
-.seller-link:hover { color: #fff !important; }
 @media (max-width: 600px) { .topbar { display: none; } }
 
 .navbar-main { border-bottom: 1px solid var(--border); }
 .nav-inner { display: flex; align-items: center; gap: 12px; height: 68px; }
 
 .brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.brand-icon { width: 38px; height: 38px; background: var(--primary); color: #fff; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; flex-shrink: 0; }
+.brand-logo { height: 40px; width: 40px; object-fit: contain; flex-shrink: 0; }
 .brand-text { display: flex; flex-direction: column; line-height: 1.1; }
 .brand-name { font-size: 17px; font-weight: 900; color: var(--primary); letter-spacing: -0.3px; }
 .brand-tag { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
@@ -240,17 +249,21 @@ onUnmounted(() => document.removeEventListener('click', handleOutside))
 .lang-opt.active { background: var(--primary-bg); color: var(--primary); font-weight: 700; }
 .lang-opt i { margin-left: auto; font-size: 11px; }
 
+.btn-sell-sticky { display: flex; align-items: center; gap: 6px; background: var(--primary); color: #fff; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; transition: all 0.18s; white-space: nowrap; box-shadow: 0 2px 8px rgba(139,90,43,0.3); }
+.btn-sell-sticky:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(139,90,43,0.4); }
+
 .btn-signin { display: flex; align-items: center; gap: 7px; background: var(--primary); color: #fff; padding: 9px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; transition: all 0.18s; white-space: nowrap; }
-.btn-signin:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(232,93,4,0.3); }
+.btn-signin:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(139,90,43,0.3); }
 .btn-signin i { font-size: 15px; }
 
 .user-menu-wrap { position: relative; }
 .user-trigger { flex-direction: row !important; gap: 7px; font-size: 15px; }
 .user-trigger span { font-size: 13px; font-weight: 600; color: var(--text); }
-.user-avatar-sm { width: 30px; height: 30px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
+.user-avatar-sm { width: 30px; height: 30px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; overflow: hidden; }
+.avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .user-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); min-width: 230px; z-index: 100; overflow: hidden; }
 .dropdown-header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--border); background: var(--surface-2); }
-.dh-avatar { width: 36px; height: 36px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+.dh-avatar { width: 36px; height: 36px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; overflow: hidden; }
 .dropdown-header strong { display: block; font-size: 13px; font-weight: 700; }
 .dropdown-header small { font-size: 11px; color: var(--text-muted); display: block; }
 .role-chip { display: inline-block; font-size: 10px; font-weight: 700; text-transform: capitalize; padding: 1px 7px; border-radius: 99px; margin-top: 2px; background: var(--primary-bg); color: var(--primary); }
@@ -266,22 +279,23 @@ onUnmounted(() => document.removeEventListener('click', handleOutside))
 .cat-nav { background: var(--surface); border-bottom: 1px solid var(--border); }
 .cat-nav-inner { display: flex; gap: 0; height: 42px; align-items: center; overflow-x: auto; scrollbar-width: none; }
 .cat-nav-inner::-webkit-scrollbar { display: none; }
-.cat-link { padding: 5px 12px; border-radius: 0; font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; border-bottom: 2px solid transparent; height: 100%; display: flex; align-items: center; gap: 5px; transition: all 0.18s; }
+.cat-link { padding: 5px 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; border-bottom: 2px solid transparent; height: 100%; display: flex; align-items: center; gap: 5px; transition: all 0.18s; }
 .cat-link i { font-size: 11px; }
 .cat-link:hover, .cat-link.active { color: var(--primary); border-bottom-color: var(--primary); }
-.cat-link.sell-link { margin-left: auto; color: var(--primary); font-weight: 700; flex-shrink: 0; }
-.cat-link.sell-link:hover { background: var(--primary-bg); }
+.cat-link.sell-link { margin-left: auto; color: var(--primary); font-weight: 700; flex-shrink: 0; border: 1px solid var(--primary); border-bottom: 2px solid transparent; border-radius: var(--radius-xs); margin-right: 0; }
+.cat-link.sell-link:hover { background: var(--primary); color: #fff; border-bottom-color: var(--primary); }
 
 .mobile-menu { background: var(--surface); border-top: 1px solid var(--border); padding: 12px; display: flex; flex-direction: column; gap: 2px; }
 .mob-search { display: flex; gap: 8px; margin-bottom: 10px; }
 .mob-search button { background: var(--primary); color: #fff; border: none; padding: 10px 14px; border-radius: var(--radius-sm); }
-.mob-link { display: flex; align-items: center; gap: 10px; padding: 12px 12px; border-radius: var(--radius-sm); font-size: 14px; color: var(--text); transition: background 0.15s; background: none; border: none; cursor: pointer; text-align: left; width: 100%; }
+.mob-link { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: var(--radius-sm); font-size: 14px; color: var(--text); transition: background 0.15s; background: none; border: none; cursor: pointer; text-align: left; width: 100%; }
 .mob-link:hover { background: var(--surface-2); color: var(--primary); }
+.mob-link.sell { color: var(--primary); font-weight: 700; }
 .mob-link.sign-in { color: var(--primary); font-weight: 700; background: var(--primary-bg); }
 .mob-lang { display: flex; gap: 6px; padding: 8px 0; flex-wrap: wrap; }
 .mob-lang-btn { padding: 6px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; background: var(--surface-2); color: var(--text-muted); cursor: pointer; font-weight: 600; transition: all 0.15s; }
 .mob-lang-btn.active { border-color: var(--primary); background: var(--primary-bg); color: var(--primary); }
 
-@media (max-width: 900px) { .search-box { max-width: 240px; } .search-box select { display: none; } .hamburger { display: flex; } }
+@media (max-width: 900px) { .search-box { max-width: 240px; } .search-box select { display: none; } .hamburger { display: flex; } .btn-sell-sticky { display: none; } }
 @media (max-width: 600px) { .search-box { display: none; } .cat-nav { display: none; } .brand-text { display: none; } }
 </style>

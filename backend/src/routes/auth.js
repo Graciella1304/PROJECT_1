@@ -2,10 +2,52 @@ const express = require('express')
 const router = express.Router()
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const { OAuth2Client } = require('google-auth-library')
 const { db, logActivity } = require('../db/database')
 const { JWT_SECRET, authMiddleware } = require('../middleware/auth')
 
-// Admin Login — only for admin dashboard
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+
+// ─── Google OAuth ────────────────────────────────────────────────
+router.post('/google', async (req, res) => {
+  try {
+    const { credential } = req.body
+    if (!credential) return res.status(400).json({ error: 'Google credential required' })
+    if (!process.env.GOOGLE_CLIENT_ID) return res.status(500).json({ error: 'Google Sign-In is not configured on the server' })
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID
+    })
+    const payload = ticket.getPayload()
+    const { sub: googleId, email, name, picture } = payload
+
+    let user = await db.users.findOne({ email })
+    if (!user) {
+      user = await db.users.insert({
+        name, email, googleId, avatar: picture || '',
+        role: 'buyer', sellerStatus: null, phone: '',
+        nationalId: `GOOGLE-${googleId}`, password: '',
+        createdAt: new Date()
+      })
+      await logActivity('user_register', `New user registered via Google: ${name}`, user._id, { email })
+    } else {
+      if (!user.googleId) {
+        await db.users.update({ _id: user._id }, { $set: { googleId, avatar: user.avatar || picture || '' } })
+      }
+      if (user.role === 'admin') return res.status(403).json({ error: 'Please use the admin panel to log in' })
+    }
+
+    await logActivity('user_login', `User signed in via Google: ${name}`, user._id, {})
+    const token = jwt.sign({ id: user._id, email: user.email, role: user.role, name: user.name }, JWT_SECRET, { expiresIn: '7d' })
+    res.json({ token, user: { id: user._id, email: user.email, role: user.role, name: user.name, avatar: user.avatar, sellerStatus: user.sellerStatus } })
+  } catch (e) {
+    console.error('Google auth error:', e.message)
+    res.status(401).json({ error: 'Invalid Google credential' })
+  }
+})
+
+// ─── Admin Login — only for admin dashboard ──────────────────────
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body
@@ -19,7 +61,7 @@ router.post('/login', async (req, res) => {
   } catch { res.status(500).json({ error: 'Server error' }) }
 })
 
-// User Register
+// ─── User Register ───────────────────────────────────────────────
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, phone, nationalId, accountType } = req.body
@@ -34,7 +76,7 @@ router.post('/register', async (req, res) => {
     const user = await db.users.insert({
       name, email, password: hash, phone: phone || '', nationalId,
       role: 'buyer', sellerStatus: isSeller ? 'pending' : null,
-      avatar: '', createdAt: new Date()
+      avatar: '', googleId: null, createdAt: new Date()
     })
     await logActivity('user_register', `New user registered: ${name}`, user._id, { email, accountType })
     if (isSeller) {
@@ -46,7 +88,7 @@ router.post('/register', async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: 'Server error' }) }
 })
 
-// User Login (buyers/sellers)
+// ─── User Login (buyers/sellers) ─────────────────────────────────
 router.post('/user-login', async (req, res) => {
   try {
     const { email, password } = req.body
@@ -56,11 +98,11 @@ router.post('/user-login', async (req, res) => {
     if (user.role === 'admin') return res.status(403).json({ error: 'Please use the admin panel to log in' })
     await logActivity('user_login', `User logged in: ${user.name}`, user._id, {})
     const token = jwt.sign({ id: user._id, email: user.email, role: user.role, name: user.name }, JWT_SECRET, { expiresIn: '7d' })
-    res.json({ token, user: { id: user._id, email: user.email, role: user.role, name: user.name, sellerStatus: user.sellerStatus, phone: user.phone } })
+    res.json({ token, user: { id: user._id, email: user.email, role: user.role, name: user.name, avatar: user.avatar || '', sellerStatus: user.sellerStatus, phone: user.phone } })
   } catch { res.status(500).json({ error: 'Server error' }) }
 })
 
-// Get current user
+// ─── Get current user ────────────────────────────────────────────
 router.get('/me', authMiddleware, async (req, res) => {
   try {
     const user = await db.users.findOne({ _id: req.user.id })
@@ -70,7 +112,7 @@ router.get('/me', authMiddleware, async (req, res) => {
   } catch { res.status(500).json({ error: 'Server error' }) }
 })
 
-// Update profile
+// ─── Update profile ───────────────────────────────────────────────
 router.put('/profile', authMiddleware, async (req, res) => {
   try {
     const { name, phone } = req.body
@@ -81,7 +123,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
   } catch { res.status(500).json({ error: 'Server error' }) }
 })
 
-// Admin: list all users
+// ─── Admin: list all users ────────────────────────────────────────
 router.get('/users', authMiddleware, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'Unauthorized' })
@@ -90,7 +132,7 @@ router.get('/users', authMiddleware, async (req, res) => {
   } catch { res.status(500).json({ error: 'Server error' }) }
 })
 
-// Admin: update user role
+// ─── Admin: update user role ──────────────────────────────────────
 router.put('/users/:id', authMiddleware, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'Unauthorized' })
@@ -101,7 +143,7 @@ router.put('/users/:id', authMiddleware, async (req, res) => {
   } catch { res.status(500).json({ error: 'Server error' }) }
 })
 
-// Admin: delete user
+// ─── Admin: delete user ───────────────────────────────────────────
 router.delete('/users/:id', authMiddleware, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'Unauthorized' })
@@ -113,7 +155,7 @@ router.delete('/users/:id', authMiddleware, async (req, res) => {
   } catch { res.status(500).json({ error: 'Server error' }) }
 })
 
-// Seller requests
+// ─── Seller requests ──────────────────────────────────────────────
 router.get('/seller-requests', authMiddleware, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'Unauthorized' })

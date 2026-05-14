@@ -1,7 +1,7 @@
 {
   "name": "kliktrade-frontend",
   "version": "1.0.0",
-  "description": "KlikTrade Shop Frontend - Vue.js 3",
+  "description": "KlikTrade Rwanda — Vue.js 3 Frontend",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

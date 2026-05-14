@@ -27,6 +27,10 @@ export const useUserStore = defineStore('user', () => {
     return data
   }
 
+  async function loginWithOAuth(tokenVal, userData) {
+    setAuth(tokenVal, userData)
+  }
+
   async function refreshUser() {
     try {
       const { data } = await axios.get('/api/auth/me', { headers: { Authorization: `Bearer ${token.value}` } })
@@ -54,5 +58,5 @@ export const useUserStore = defineStore('user', () => {
 
   function isWishlisted(id) { return wishlistIds.value.includes(id) }
 
-  return { token, user, isLoggedIn, wishlistIds, login, register, logout, initUser, refreshUser, toggleWishlist, isWishlisted }
+  return { token, user, isLoggedIn, wishlistIds, login, register, loginWithOAuth, logout, initUser, refreshUser, toggleWishlist, isWishlisted }
 })
